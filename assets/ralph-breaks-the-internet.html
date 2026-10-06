@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FunniHub</title>
+<style>
+body{margin:0;background:#111;color:#eee;font-family:"DejaVu Sans",Verdana,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px;border-bottom:3px solid #eee;font-size:24px}
+header a{color:#eee;text-decoration:none}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
+video,iframe{width:min(960px,100%);aspect-ratio:16/9;background:#000;border:0}
+#msg{color:#999}
+</style>
+</head>
+<body>
+<header><a href="../store.html">&larr; Store</a></header>
+<main>
+  <h1>Ralph Breaks The Internet</h1>
+  <div id="player"></div>
+  <div id="msg"></div>
+</main>
+<script>
+// paste your video link here (.mp4 plays directly, anything else loads as an embed)
+const VIDEO="";
+
+const player=document.getElementById("player");
+if(VIDEO){
+  let el;
+  if(/\.(mp4|webm|ogg)(\?|$)/i.test(VIDEO)){el=document.createElement("video");el.controls=true;el.src=VIDEO}
+  else{el=document.createElement("iframe");el.src=VIDEO;el.allowFullscreen=true}
+  player.append(el);
+}else{
+  document.getElementById("msg").textContent="no video link yet";
+}
+</script>
+</body>
+</html>
