@@ -64,7 +64,7 @@ rows.forEach(([name,items])=>{
   items.forEach(i=>{
     const d=document.createElement(i.ok?"a":"div");
     d.className="p"+(i.ok?"":" soon");
-    if(i.ok)d.href="movies/"+SL[i.t]+".html";
+    if(i.ok)d.href="assets/"+SL[i.t]+".html";
     d.dataset.t=i.t.toLowerCase();
     d.innerHTML=`<span>poster</span><small>${i.t}${i.ok?"":"<br>coming soon"}</small>`;
     r.appendChild(d);
