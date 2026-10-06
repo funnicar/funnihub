@@ -18,7 +18,7 @@ button.ic{background:none;border:0;color:var(--fg);font-size:20px;cursor:pointer
 section{padding:10px 24px 0}
 h2{font-weight:400;font-size:26px;margin:14px 0 14px}
 .row{display:flex;gap:24px;overflow-x:auto;padding-bottom:16px}
-.p{flex:0 0 150px;height:210px;border:3px solid var(--line);background:var(--card);padding:10px;font-family:"Comic Sans MS",cursive;font-size:16px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .12s}
+.p{color:inherit;text-decoration:none;flex:0 0 150px;height:210px;border:3px solid var(--line);background:var(--card);padding:10px;font-family:"Comic Sans MS",cursive;font-size:16px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .12s}
 .p:hover{transform:translateY(-4px)}
 .p small{font-family:inherit;font-size:12px;color:var(--mut)}
 .p.soon{cursor:not-allowed;background:var(--soon);border-style:dashed}
@@ -46,12 +46,14 @@ h2{font-weight:400;font-size:26px;margin:14px 0 14px}
 <script>
 const S=(n,t)=>({t,ok:false});
 const O=t=>({t,ok:true});
+const SL={"The Simpsons Movie":"the-simpsons-movie","Toy Story 1":"toy-story","Wreck-It Ralph":"wreck-it-ralph","Ralph Breaks the Internet":"ralph-breaks-the-internet","Family Guy S1E1":"family-guy-1-1","Shark Tale":"shark-tale","Family Guy Season 1":"family-guy-1-1"};
+const X=t=>({t,ok:false});
 const rows=[
- ["New Movies/Episodes",[O("The Simpsons Movie"),O("Toy Story 1"),O("Wreck-It Ralph"),O("Family Guy S1E1"),O("Funni's Pick 1"),O("New Movie 1"),O("New Movie 2"),O("New Movie 3")]],
+ ["New Movies/Episodes",[O("The Simpsons Movie"),O("Toy Story 1"),O("Wreck-It Ralph"),O("Family Guy S1E1"),O("Shark Tale"),O("Ralph Breaks the Internet"),X("New Movie 1"),X("New Movie 2")]],
  ["Family Guy",[O("Family Guy Season 1"),...[2,3,4,5,6,7,8].map(n=>S(n,"Family Guy Season "+n))]],
  ["The Simpsons",[O("The Simpsons Movie"),...[1,2,3,4,5,6,7].map(n=>S(n,"The Simpsons Season "+n))]],
  ["Toy Story",[O("Toy Story 1"),...[2,3,4,5].map(n=>S(n,"Toy Story "+n))]],
- ["Funni's Picks",[1,2,3,4,5,6].map(n=>O("Funni's Pick "+n))],
+ ["Funni's Picks",[O("Wreck-It Ralph"),O("Ralph Breaks the Internet"),O("Shark Tale"),...[4,5,6].map(n=>X("Funni's Pick "+n))]],
  ["Wreck-It Ralph",[O("Wreck-It Ralph"),O("Ralph Breaks the Internet")]]
 ];
 const main=document.getElementById("main");
@@ -60,11 +62,11 @@ rows.forEach(([name,items])=>{
   s.innerHTML=`<h2>${name}</h2><div class="row"></div>`;
   const r=s.querySelector(".row");
   items.forEach(i=>{
-    const d=document.createElement("div");
+    const d=document.createElement(i.ok?"a":"div");
     d.className="p"+(i.ok?"":" soon");
+    if(i.ok)d.href="movies/"+SL[i.t]+".html";
     d.dataset.t=i.t.toLowerCase();
     d.innerHTML=`<span>poster</span><small>${i.t}${i.ok?"":"<br>coming soon"}</small>`;
-    if(i.ok)d.onclick=()=>{mt.textContent="now playing: "+i.t;modal.style.display="flex"};
     r.appendChild(d);
   });
   main.appendChild(s);
