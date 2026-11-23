@@ -29,9 +29,7 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
       z-index: 10;
     }
-    .toolbar a, .toolbar button {
-      font: inherit;
-      cursor: pointer;
+    .toolbar a {
       position: relative;
       overflow: hidden;
       color: #fff;
@@ -44,7 +42,7 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -3px 6px rgba(255, 60, 60, 0.5);
       text-shadow: 0 0 3px #000, 0 1px 2px #000;
     }
-    .toolbar a::before, .toolbar button::before {
+    .toolbar a::before {
       content: "";
       position: absolute;
       top: 1px;
@@ -55,7 +53,7 @@
       background: linear-gradient(to bottom, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.05));
       pointer-events: none;
     }
-    .toolbar a:hover, .toolbar button:hover {
+    .toolbar a:hover {
       filter: brightness(1.2);
     }
 
@@ -178,9 +176,7 @@
   <nav class="toolbar">
     <a href="/">Home</a>
     <a href="https://discord.gg/nYBCMNNQFE" target="_blank" rel="noopener">Discord</a>
-    <button type="button" id="music-btn">Music: Off</button>
   </nav>
-  <audio id="theme" src="/assets/theme.mp3" loop preload="none"></audio>
 
   <main class="page">
     <div class="float text">
@@ -200,22 +196,6 @@
   <div class="yams">frutiger aero yams</div>
 
   <script>
-    (function () {
-      var audio = document.getElementById("theme");
-      var musicBtn = document.getElementById("music-btn");
-      musicBtn.addEventListener("click", function () {
-        if (audio.paused) {
-          audio.play().then(function () {
-            musicBtn.textContent = "Music: On";
-          }).catch(function () {
-            musicBtn.textContent = "Music: Off";
-          });
-        } else {
-          audio.pause();
-          musicBtn.textContent = "Music: Off";
-        }
-      });
-    })();
     (function () {
       var wallpapers = ["/assets/wallpaper.jpg", "/assets/otherwallpaper.webp"];
       var current = 0;
