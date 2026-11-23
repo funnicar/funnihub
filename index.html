@@ -100,6 +100,40 @@
       margin: 0;
       line-height: 1.5;
     }
+
+    /* wallpaper button */
+    .wp-btn {
+      position: relative;
+      overflow: hidden;
+      font: inherit;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      padding: 1px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: radial-gradient(ellipse at 50% 120%, #ff2a2a 0%, #c40000 55%, #7a0000 100%);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), inset 0 -3px 6px rgba(255, 60, 60, 0.5);
+      text-shadow: 0 0 3px #000, 0 1px 2px #000;
+    }
+    .wp-btn::before {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 6%;
+      width: 88%;
+      height: 50%;
+      border-radius: 999px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.05));
+      pointer-events: none;
+    }
+    .wp-btn:hover {
+      filter: brightness(1.2);
+    }
+    .wp-btn:active {
+      transform: translateY(1px);
+    }
+
     img.float {
       display: block;
       width: 100%;
@@ -136,8 +170,8 @@
 
   <main class="page">
     <div class="float text">
-      <h1>Heading</h1>
-      <p>blah blah blah lorem ipsum whatever</p>
+      <h1>Hey my name is Funni</h1>
+      <p>And this is who i ammmm.... ok i'm sorry. anyway, i'm funni car. prolly pretty cool to some people. incase you cant tell i kinda like mac os wallpapers. you can press <button type="button" class="wp-btn" id="wp-btn">this button</button> to change the wallpaper.</p>
     </div>
 
     <img class="float" src="/assets/plushie.webp" alt="plushie">
@@ -148,5 +182,16 @@
 
     <img class="float tall wide" src="/assets/wwyffh.png" alt="wwyffh">
   </main>
+
+  <script>
+    (function () {
+      var wallpapers = ["/assets/wallpaper.jpg", "/assets/otherwallpaper.webp"];
+      var current = 0;
+      document.getElementById("wp-btn").addEventListener("click", function () {
+        current = (current + 1) % wallpapers.length;
+        document.body.style.backgroundImage = 'url("' + wallpapers[current] + '")';
+      });
+    })();
+  </script>
 </body>
 </html>
