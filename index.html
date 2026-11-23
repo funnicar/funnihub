@@ -56,6 +56,76 @@
     .toolbar a:hover {
       filter: brightness(1.2);
     }
+
+    /* layout */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 28px;
+    }
+    .page .wide {
+      grid-column: 1 / -1;
+    }
+
+    /* floating things */
+    .float {
+      border-radius: 10px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      animation: bob 6s ease-in-out infinite;
+    }
+    .float:nth-child(2) { animation-delay: -1.5s; }
+    .float:nth-child(3) { animation-delay: -3s; }
+    .float:nth-child(4) { animation-delay: -4.5s; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .float { animation: none; }
+    }
+
+    .text {
+      padding: 16px 18px;
+      color: #111;
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .text h1 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+    }
+    .text p {
+      margin: 0;
+      line-height: 1.5;
+    }
+    img.float {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .icon-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .icon-box img {
+      max-height: 160px;
+      max-width: 100%;
+    }
+    img.tall {
+      min-height: 320px;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -63,5 +133,20 @@
     <a href="/">Home</a>
     <a href="https://discord.gg/nYBCMNNQFE" target="_blank" rel="noopener">Discord</a>
   </nav>
+
+  <main class="page">
+    <div class="float text">
+      <h1>Heading</h1>
+      <p>blah blah blah lorem ipsum whatever</p>
+    </div>
+
+    <img class="float" src="/assets/plushie.png" alt="plushie">
+
+    <div class="float icon-box wide">
+      <img src="/icon.png" alt="icon">
+    </div>
+
+    <img class="float tall wide" src="/assets/wwyffh.png" alt="wwyffh">
+  </main>
 </body>
 </html>
