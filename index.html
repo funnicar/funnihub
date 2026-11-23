@@ -13,10 +13,35 @@
     body {
       background: url("/assets/wallpaper.jpg") no-repeat center center fixed;
       background-size: cover;
+      font-family: system-ui, sans-serif;
+    }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      gap: 4px;
+      padding: 8px 16px;
+      background: url("/assets/aluminium-not-aluminum.jpg") center / cover;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      z-index: 10;
+    }
+    .toolbar a {
+      color: #111;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 4px;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    .toolbar a:hover {
+      background: rgba(255, 255, 255, 0.4);
     }
   </style>
 </head>
 <body>
-
+  <nav class="toolbar">
+    <a href="/">Home</a>
+    <a href="https://discord.gg/nYBCMNNQFE" target="_blank" rel="noopener">Discord</a>
+  </nav>
 </body>
 </html>
