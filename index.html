@@ -128,6 +128,41 @@
       background: linear-gradient(to bottom, #cfe6f7, #8fb8d6);
     }
 
+    /* loading screen */
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+      background: radial-gradient(ellipse at 50% 30%, #6fc4f2 0%, #2a8fd0 45%, #0b4f86 100%);
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    .loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* layout */
     .page {
       max-width: 900px;
@@ -211,6 +246,8 @@
   </style>
 </head>
 <body>
+  <div class="loading" id="loading"><div class="spinner"></div><div>Loading...</div></div>
+
   <nav class="toolbar">
     <a href="/">Home</a>
     <a href="https://discord.gg/nYBCMNNQFE" target="_blank" rel="noopener">Discord</a>
@@ -271,9 +308,36 @@
         if (url) document.querySelector(".toolbar").style.backgroundImage = 'url("' + url + '")';
       });
 
+      // ---- loading screen ----
+      var loading = document.getElementById("loading");
+      var loadToken = 0;
+      var failsafe;
+      function hideLoading() {
+        loading.classList.add("hidden");
+        clearTimeout(failsafe);
+      }
+      // show the loading screen until the wallpaper has loaded, then apply it
+      function loadWallpaper(url, apply) {
+        var token = ++loadToken;
+        loading.classList.remove("hidden");
+        clearTimeout(failsafe);
+        failsafe = setTimeout(hideLoading, 15000);
+        var img = new Image();
+        function done() {
+          if (token !== loadToken) return; // a newer pick replaced this one
+          if (apply) document.body.style.backgroundImage = 'url("' + url + '")';
+          hideLoading();
+        }
+        img.onload = done;
+        img.onerror = done;
+        img.src = url;
+      }
+      // first load: wait for the default wallpaper
+      loadWallpaper("/assets/wallpaper.jpg", false);
+
       // ---- wallpapers ----
       function setWallpaper(url, item) {
-        document.body.style.backgroundImage = 'url("' + url + '")';
+        loadWallpaper(url, true);
         Array.prototype.forEach.call(menu.children, function (c) { c.classList.remove("active"); });
         item.classList.add("active");
         menu.classList.remove("open");
