@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FunniHub</title>
-  <link rel="icon" id="favicon" href="data:,">
+  <link rel="icon" id="favicon" href="/icon.png">
   <style>
     html, body {
       margin: 0;
       min-height: 100%;
     }
     body {
-      background: no-repeat center center fixed;
+      background: url("/assets/wallpaper.jpg") no-repeat center center fixed;
       background-size: cover;
       font-family: system-ui, sans-serif;
     }
@@ -22,6 +22,7 @@
       gap: 4px;
       padding: 8px 16px;
       background-color: #9a9a9a;
+      background-image: url("/assets/aluminium-not-aluminum.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -225,13 +226,13 @@
       <p>And this is who i ammmm.... ok i'm sorry. anyway, i'm funni car. prolly pretty cool to some people. incase you cant tell i kinda like mac os wallpapers. you can press that button to change the wallpaper. also the default wallpaper is a jpg, and the other wallpaper is a webp. crazy files we live in eh? ...LAUGH. NOW. anyway personally i like the default more. apple and microsoft PLEASE dont kill me i love the wallpapers. so yeah more about me i was born july 21 and i miss the chill guy meme cuz its cool like that. A long long time ago, before time had a name... idk i never seen ninjago</p>
     </div>
 
-    <img class="float" data-asset="/assets/plushie" alt="plushie">
+    <img class="float" src="/assets/plushie.webp" data-asset="/assets/plushie" alt="plushie">
 
     <div class="float icon-box wide">
-      <img data-asset="/icon" alt="icon">
+      <img src="/icon.png" data-asset="/icon" alt="icon">
     </div>
 
-    <img class="float tall wide" data-asset="/assets/wwyffh" alt="wwyffh">
+    <img class="float tall wide" src="/assets/wwyffh.png" data-asset="/assets/wwyffh" alt="wwyffh">
 
   </main>
 
@@ -239,35 +240,13 @@
 
   <script>
     (function () {
-      var baseExts = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "bmp", "ico", "apng", "jfif", "pjpeg", "pjp", "tif", "tiff"];
+      var baseExts = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "bmp", "ico", "apng", "jfif", "tif", "tiff"];
       var exts = baseExts.concat(baseExts.map(function (e) { return e.toUpperCase(); }));
-      var imgRe = new RegExp("\\.(" + baseExts.join("|") + ")$", "i");
       var toggle = document.getElementById("wp-toggle");
       var menu = document.getElementById("wp-menu");
 
-      // ---- directory listing (works when the server shows folder contents) ----
-      var listings = {};
-      function listDir(dir) {
-        if (!listings[dir]) {
-          listings[dir] = fetch(dir, { cache: "no-store" })
-            .then(function (r) { return r.ok ? r.text() : ""; })
-            .then(function (html) {
-              var files = [];
-              var re = /href=["']([^"'?#]+)["']/gi, m;
-              while ((m = re.exec(html))) {
-                var name = decodeURIComponent(m[1].split("/").pop());
-                if (imgRe.test(name)) files.push(name);
-              }
-              return files;
-            })
-            .catch(function () { return []; });
-        }
-        return listings[dir];
-      }
-      function stem(name) { return name.replace(/\.[^.]+$/, ""); }
-
-      // ---- find <base>.<any ext> ----
-      function probe(base) {
+      // try <base>.<ext> for every ext, resolves with the url that loads or null
+      function findByPath(base) {
         return new Promise(function (resolve) {
           var i = 0;
           var img = new Image();
@@ -280,25 +259,13 @@
           img.src = base + "." + exts[0];
         });
       }
-      function findByPath(base) {
-        var dir = base.slice(0, base.lastIndexOf("/") + 1);
-        var want = base.slice(base.lastIndexOf("/") + 1).toLowerCase();
-        return listDir(dir).then(function (files) {
-          for (var k = 0; k < files.length; k++) {
-            if (stem(files[k]).toLowerCase() === want) return dir + encodeURIComponent(files[k]);
-          }
-          return probe(base);
-        });
-      }
 
-      // ---- images, favicon, toolbar ----
+      // everything already has a working default in the html/css,
+      // these only swap in a different extension if one is found
       document.querySelectorAll("img[data-asset]").forEach(function (img) {
         findByPath(img.getAttribute("data-asset")).then(function (url) {
-          if (url) img.src = url;
+          if (url && img.getAttribute("src") !== url) img.src = url;
         });
-      });
-      findByPath("/icon").then(function (url) {
-        if (url) document.getElementById("favicon").href = url;
       });
       findByPath("/assets/aluminium-not-aluminum").then(function (url) {
         if (url) document.querySelector(".toolbar").style.backgroundImage = 'url("' + url + '")';
@@ -316,33 +283,29 @@
         item.type = "button";
         item.textContent = name;
         item.addEventListener("click", function () { setWallpaper(url, item); });
-        if (!menu.children.length) {
-          item.classList.add("active");
-          document.body.style.backgroundImage = 'url("' + url + '")';
-        }
+        if (!menu.children.length) item.classList.add("active");
         menu.appendChild(item);
       }
-      function num(name) { return parseInt(name.replace(/\D/g, ""), 10) || 1; }
 
-      // probe wallpaper, wallpaper2... and keep going past gaps
-      function scan(n, misses, found) {
-        if (n > 60 || misses >= 5) return Promise.resolve(found);
-        var name = n === 1 ? "wallpaper" : "wallpaper" + n;
-        return findByPath("/assets/" + name).then(function (url) {
-          if (url) found.push({ name: name, url: url });
-          return scan(n + 1, url ? 0 : misses + 1, found);
-        });
+      // known ones show right away, then look for any other extension / more numbers
+      var known = { "wallpaper": "/assets/wallpaper.jpg", "wallpaper2": "/assets/wallpaper2.webp" };
+      var items = {};
+      function add(name, url) {
+        if (items[name]) { items[name].url = url; return; }
+        items[name] = { url: url };
+        addItem(name, url);
       }
+      Object.keys(known).forEach(function (k) { add(k, known[k]); });
 
-      listDir("/assets/").then(function (files) {
-        var fromList = files
-          .filter(function (f) { return /^wallpaper\d*$/i.test(stem(f)); })
-          .sort(function (x, y) { return num(stem(x)) - num(stem(y)); })
-          .map(function (f) { return { name: stem(f), url: "/assets/" + encodeURIComponent(f) }; });
-        return fromList.length ? fromList : scan(1, 0, []);
-      }).then(function (list) {
-        list.forEach(function (w) { addItem(w.name, w.url); });
-      });
+      // wallpaper, wallpaper2, wallpaper3... keeps going past gaps
+      (function scan(n, misses) {
+        if (n > 60 || misses >= 5) return;
+        var name = n === 1 ? "wallpaper" : "wallpaper" + n;
+        findByPath("/assets/" + name).then(function (url) {
+          if (url && !items[name]) add(name, url);
+          scan(n + 1, url || items[name] ? 0 : misses + 1);
+        });
+      })(1, 0);
 
       toggle.addEventListener("click", function (e) {
         e.stopPropagation();
