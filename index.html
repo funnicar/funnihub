@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FunniHub</title>
-  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="icon" id="favicon" href="data:,">
   <style>
     html, body {
       margin: 0;
       min-height: 100%;
     }
     body {
-      background: url("/assets/wallpaper.jpg") no-repeat center center fixed;
+      background: no-repeat center center fixed;
       background-size: cover;
       font-family: system-ui, sans-serif;
     }
@@ -22,7 +22,6 @@
       gap: 4px;
       padding: 8px 16px;
       background-color: #9a9a9a;
-      background-image: url("/assets/aluminium-not-aluminum.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -226,13 +225,13 @@
       <p>And this is who i ammmm.... ok i'm sorry. anyway, i'm funni car. prolly pretty cool to some people. incase you cant tell i kinda like mac os wallpapers. you can press that button to change the wallpaper. also the default wallpaper is a jpg, and the other wallpaper is a webp. crazy files we live in eh? ...LAUGH. NOW. anyway personally i like the default more. apple and microsoft PLEASE dont kill me i love the wallpapers. so yeah more about me i was born july 21 and i miss the chill guy meme cuz its cool like that. A long long time ago, before time had a name... idk i never seen ninjago</p>
     </div>
 
-    <img class="float" src="/assets/plushie.webp" alt="plushie">
+    <img class="float" data-asset="/assets/plushie" alt="plushie">
 
     <div class="float icon-box wide">
-      <img src="/icon.png" alt="icon">
+      <img data-asset="/icon" alt="icon">
     </div>
 
-    <img class="float tall wide" src="/assets/wwyffh.png" alt="wwyffh">
+    <img class="float tall wide" data-asset="/assets/wwyffh" alt="wwyffh">
 
   </main>
 
@@ -240,7 +239,7 @@
 
   <script>
     (function () {
-      var exts = ["jpg", "jpeg", "png", "webp", "gif"];
+      var exts = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "bmp", "ico", "apng", "jfif", "tif", "tiff"];
       var toggle = document.getElementById("wp-toggle");
       var menu = document.getElementById("wp-menu");
 
@@ -260,26 +259,45 @@
         menu.appendChild(item);
       }
 
-      // find /assets/<name>.<any ext>, resolves with url or null
-      function findImage(name) {
+      // find <base>.<any ext>, resolves with url or null
+      function findByPath(base) {
         return new Promise(function (resolve) {
           var i = 0;
           var img = new Image();
-          img.onload = function () { resolve("/assets/" + name + "." + exts[i]); };
+          img.onload = function () { resolve(base + "." + exts[i]); };
           img.onerror = function () {
             i++;
-            if (i < exts.length) img.src = "/assets/" + name + "." + exts[i];
+            if (i < exts.length) img.src = base + "." + exts[i];
             else resolve(null);
           };
-          img.src = "/assets/" + name + "." + exts[0];
+          img.src = base + "." + exts[0];
         });
       }
+      function findImage(name) { return findByPath("/assets/" + name); }
+
+      // every <img data-asset="/path/name"> gets its real extension
+      document.querySelectorAll("img[data-asset]").forEach(function (img) {
+        findByPath(img.getAttribute("data-asset")).then(function (url) {
+          if (url) img.src = url;
+        });
+      });
+
+      // favicon
+      findByPath("/icon").then(function (url) {
+        if (url) document.getElementById("favicon").href = url;
+      });
+
+      // toolbar background
+      findByPath("/assets/aluminium-not-aluminum").then(function (url) {
+        if (url) document.querySelector(".toolbar").style.backgroundImage = 'url("' + url + '")';
+      });
 
       // wallpaper, wallpaper2, wallpaper3... until one is missing
       function scan(n) {
         var name = n === 1 ? "wallpaper" : "wallpaper" + n;
         findImage(name).then(function (url) {
           if (!url || n > 30) return;
+          if (n === 1) document.body.style.backgroundImage = 'url("' + url + '")';
           addItem(name, url);
           scan(n + 1);
         });
