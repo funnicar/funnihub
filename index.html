@@ -239,28 +239,35 @@
 
   <script>
     (function () {
-      var exts = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "bmp", "ico", "apng", "jfif", "tif", "tiff"];
+      var baseExts = ["png", "jpg", "jpeg", "webp", "gif", "avif", "svg", "bmp", "ico", "apng", "jfif", "pjpeg", "pjp", "tif", "tiff"];
+      var exts = baseExts.concat(baseExts.map(function (e) { return e.toUpperCase(); }));
+      var imgRe = new RegExp("\\.(" + baseExts.join("|") + ")$", "i");
       var toggle = document.getElementById("wp-toggle");
       var menu = document.getElementById("wp-menu");
 
-      function setWallpaper(url, item) {
-        document.body.style.backgroundImage = 'url("' + url + '")';
-        Array.prototype.forEach.call(menu.children, function (c) { c.classList.remove("active"); });
-        item.classList.add("active");
-        menu.classList.remove("open");
+      // ---- directory listing (works when the server shows folder contents) ----
+      var listings = {};
+      function listDir(dir) {
+        if (!listings[dir]) {
+          listings[dir] = fetch(dir, { cache: "no-store" })
+            .then(function (r) { return r.ok ? r.text() : ""; })
+            .then(function (html) {
+              var files = [];
+              var re = /href=["']([^"'?#]+)["']/gi, m;
+              while ((m = re.exec(html))) {
+                var name = decodeURIComponent(m[1].split("/").pop());
+                if (imgRe.test(name)) files.push(name);
+              }
+              return files;
+            })
+            .catch(function () { return []; });
+        }
+        return listings[dir];
       }
+      function stem(name) { return name.replace(/\.[^.]+$/, ""); }
 
-      function addItem(name, url) {
-        var item = document.createElement("button");
-        item.type = "button";
-        item.textContent = name;
-        item.addEventListener("click", function () { setWallpaper(url, item); });
-        if (!menu.children.length) item.classList.add("active");
-        menu.appendChild(item);
-      }
-
-      // find <base>.<any ext>, resolves with url or null
-      function findByPath(base) {
+      // ---- find <base>.<any ext> ----
+      function probe(base) {
         return new Promise(function (resolve) {
           var i = 0;
           var img = new Image();
@@ -273,36 +280,69 @@
           img.src = base + "." + exts[0];
         });
       }
-      function findImage(name) { return findByPath("/assets/" + name); }
+      function findByPath(base) {
+        var dir = base.slice(0, base.lastIndexOf("/") + 1);
+        var want = base.slice(base.lastIndexOf("/") + 1).toLowerCase();
+        return listDir(dir).then(function (files) {
+          for (var k = 0; k < files.length; k++) {
+            if (stem(files[k]).toLowerCase() === want) return dir + encodeURIComponent(files[k]);
+          }
+          return probe(base);
+        });
+      }
 
-      // every <img data-asset="/path/name"> gets its real extension
+      // ---- images, favicon, toolbar ----
       document.querySelectorAll("img[data-asset]").forEach(function (img) {
         findByPath(img.getAttribute("data-asset")).then(function (url) {
           if (url) img.src = url;
         });
       });
-
-      // favicon
       findByPath("/icon").then(function (url) {
         if (url) document.getElementById("favicon").href = url;
       });
-
-      // toolbar background
       findByPath("/assets/aluminium-not-aluminum").then(function (url) {
         if (url) document.querySelector(".toolbar").style.backgroundImage = 'url("' + url + '")';
       });
 
-      // wallpaper, wallpaper2, wallpaper3... until one is missing
-      function scan(n) {
+      // ---- wallpapers ----
+      function setWallpaper(url, item) {
+        document.body.style.backgroundImage = 'url("' + url + '")';
+        Array.prototype.forEach.call(menu.children, function (c) { c.classList.remove("active"); });
+        item.classList.add("active");
+        menu.classList.remove("open");
+      }
+      function addItem(name, url) {
+        var item = document.createElement("button");
+        item.type = "button";
+        item.textContent = name;
+        item.addEventListener("click", function () { setWallpaper(url, item); });
+        if (!menu.children.length) {
+          item.classList.add("active");
+          document.body.style.backgroundImage = 'url("' + url + '")';
+        }
+        menu.appendChild(item);
+      }
+      function num(name) { return parseInt(name.replace(/\D/g, ""), 10) || 1; }
+
+      // probe wallpaper, wallpaper2... and keep going past gaps
+      function scan(n, misses, found) {
+        if (n > 60 || misses >= 5) return Promise.resolve(found);
         var name = n === 1 ? "wallpaper" : "wallpaper" + n;
-        findImage(name).then(function (url) {
-          if (!url || n > 30) return;
-          if (n === 1) document.body.style.backgroundImage = 'url("' + url + '")';
-          addItem(name, url);
-          scan(n + 1);
+        return findByPath("/assets/" + name).then(function (url) {
+          if (url) found.push({ name: name, url: url });
+          return scan(n + 1, url ? 0 : misses + 1, found);
         });
       }
-      scan(1);
+
+      listDir("/assets/").then(function (files) {
+        var fromList = files
+          .filter(function (f) { return /^wallpaper\d*$/i.test(stem(f)); })
+          .sort(function (x, y) { return num(stem(x)) - num(stem(y)); })
+          .map(function (f) { return { name: stem(f), url: "/assets/" + encodeURIComponent(f) }; });
+        return fromList.length ? fromList : scan(1, 0, []);
+      }).then(function (list) {
+        list.forEach(function (w) { addItem(w.name, w.url); });
+      });
 
       toggle.addEventListener("click", function (e) {
         e.stopPropagation();
