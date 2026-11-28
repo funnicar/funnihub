@@ -150,7 +150,7 @@
     .page {
       max-width: 900px;
       margin: 0 auto;
-      padding: 28px 20px 60px;
+      padding: 28px 20px;
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 28px;
@@ -211,7 +211,7 @@
       min-height: 320px;
     }
 
-    /* way down below */
+    /* way down below: keep this the last thing on the page */
     .yams {
       margin: 10000px 0 80px;
       text-align: center;
@@ -227,7 +227,6 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
-      padding-bottom: 60px;
     }
     .click-btn {
       font: inherit;
@@ -282,12 +281,12 @@
 
   </main>
 
-  <div class="yams">frutiger aero yams</div>
-
   <div class="clicker">
     <button type="button" class="click-btn" id="click-btn">Click me</button>
     <div class="click-count" id="click-count">You clicked it 0 times</div>
   </div>
+
+  <div class="yams">frutiger aero yams</div>
 
   <script>
     (function () {
