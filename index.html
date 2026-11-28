@@ -29,7 +29,9 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
       z-index: 10;
     }
-    .toolbar a {
+    .toolbar a,
+    .wp-toggle,
+    .click-btn {
       position: relative;
       overflow: hidden;
       color: #fff;
@@ -42,7 +44,9 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -3px 6px rgba(255, 60, 60, 0.5);
       text-shadow: 0 0 3px #000, 0 1px 2px #000;
     }
-    .toolbar a::before {
+    .toolbar a::before,
+    .wp-toggle::before,
+    .click-btn::before {
       content: "";
       position: absolute;
       top: 1px;
@@ -53,7 +57,9 @@
       background: linear-gradient(to bottom, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.05));
       pointer-events: none;
     }
-    .toolbar a:hover {
+    .toolbar a:hover,
+    .wp-toggle:hover,
+    .click-btn:hover {
       filter: brightness(1.2);
     }
 
@@ -63,31 +69,8 @@
     }
     .wp-toggle {
       font: inherit;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      color: #fff;
       font-weight: 700;
-      padding: 6px 18px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      background: radial-gradient(ellipse at 50% 120%, #ff2a2a 0%, #c40000 55%, #7a0000 100%);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -3px 6px rgba(255, 60, 60, 0.5);
-      text-shadow: 0 0 3px #000, 0 1px 2px #000;
-    }
-    .wp-toggle::before {
-      content: "";
-      position: absolute;
-      top: 1px;
-      left: 6%;
-      width: 88%;
-      height: 50%;
-      border-radius: 999px;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.05));
-      pointer-events: none;
-    }
-    .wp-toggle:hover {
-      filter: brightness(1.2);
+      cursor: pointer;
     }
     .wp-menu {
       display: none;
@@ -238,6 +221,32 @@
       text-shadow: 0 0 6px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8);
     }
 
+    /* click counter */
+    .clicker {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 60px;
+    }
+    .click-btn {
+      font: inherit;
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 12px 40px;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .click-btn:active {
+      transform: translateY(2px);
+    }
+    .click-count {
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
     @media (max-width: 640px) {
       .page {
         grid-template-columns: 1fr;
@@ -274,6 +283,11 @@
   </main>
 
   <div class="yams">frutiger aero yams</div>
+
+  <div class="clicker">
+    <button type="button" class="click-btn" id="click-btn">Click me</button>
+    <div class="click-count" id="click-count">You clicked it 0 times</div>
+  </div>
 
   <script>
     (function () {
@@ -377,6 +391,27 @@
       });
       document.addEventListener("click", function (e) {
         if (!menu.contains(e.target)) menu.classList.remove("open");
+      });
+
+      // ---- click counter ----
+      var clickBtn = document.getElementById("click-btn");
+      var clickCount = document.getElementById("click-count");
+      var clickSound = new Audio("/assets/click.mp3");
+      clickSound.preload = "auto";
+      var clicks = 0;
+      try { clicks = parseInt(localStorage.getItem("funnihub-clicks"), 10) || 0; } catch (e) {}
+
+      function showClicks() {
+        clickCount.textContent = "You clicked it " + clicks + (clicks === 1 ? " time" : " times");
+      }
+      showClicks();
+
+      clickBtn.addEventListener("click", function () {
+        clicks++;
+        showClicks();
+        try { localStorage.setItem("funnihub-clicks", clicks); } catch (e) {}
+        // a fresh copy each time so fast clicks can overlap
+        clickSound.cloneNode().play().catch(function () {});
       });
     })();
   </script>
